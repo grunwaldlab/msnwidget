@@ -6,7 +6,8 @@
 
 #### MSN Construction
 Distance matrices (multiple options):
-- hamming distance
+- simple bitwise distance
+- dissimilarity proportion
 
 ### Pre-processing Runtime
 - clustering calculations and distance matrix building can be slow with high-level libraries
