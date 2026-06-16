@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "graphology": "^0.26.0",
-    "graphology-components": "^1.5.4"
+    "graphology-components": "^1.5.4",
+    "graphology-metrics": "^2.4.0"
   }
 }

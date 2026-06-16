@@ -135,7 +135,6 @@ console.log(`Built adjacency matrix in ${(end - start).toFixed(2)} ms`);
 // 200 samples of 1000 bases: 200 ms
 // 200 samples of 10000 bases: 2 seconds
 // 200 samples of 100000 bases: 20 seconds
-// 200 samples of 100000 bases: 20 seconds
 
 // CLUSTERING
 start = performance.now();
