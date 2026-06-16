@@ -55,15 +55,74 @@ function clusterByThreshold(samples, adjacencyMatrix, threshold = 0.8) {
       }
     });
   });
+  console.log("edges added:", graph.edges())
 
   const components = connectedComponents(graph);
   return { graph, components };
 };
 
+function componentsToClusters(samples, components) {
+  return components.map((comp, idx) => ({
+    id: `cluster_${idx + 1}`,
+    members: comp,
+  }));
+}
+
+function clusterDistance(clusterA, clusterB, samples, adjacencyMatrix) {
+  let total = 0;
+  let count = 0;
+
+  clusterA.members.forEach(a => {
+    clusterB.members.forEach(b => {
+      const i = samples.findIndex(s => s.id === a);
+      const j = samples.findIndex(s => s.id === b);
+      total += (1 - adjacencyMatrix[i][j]); // convert similarity → distance
+      count++;
+    });
+  });
+
+  return total / count;
+}
+
+function buildClusterTree(clusters, samples, adjacencyMatrix) {
+  const nodes = clusters.map(c => ({ ...c }));
+
+  while (nodes.length > 1) {
+    let bestA = null, bestB = null, bestDist = Infinity;
+
+    // find closest pair
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const d = clusterDistance(nodes[i], nodes[j], samples, adjacencyMatrix);
+        if (d < bestDist) {
+          bestDist = d;
+          bestA = i;
+          bestB = j;
+        }
+      }
+    }
+
+    // merge
+    const merged = {
+      id: `merge_${Date.now()}_${Math.random()}`,
+      children: [nodes[bestA], nodes[bestB]],
+      distance: bestDist,
+      members: [...nodes[bestA].members, ...nodes[bestB].members]
+    };
+
+    // remove old, add new
+    nodes.splice(bestB, 1);
+    nodes.splice(bestA, 1);
+    nodes.push(merged);
+  }
+
+  return nodes[0]; // root
+}
+
+
 // SAMPLE GENERATION
 let start = performance.now();
-const samples = generateFastaSamples(200, 100000);
-console.log("FASTA-like samples:", samples);
+const samples = generateFastaSamples(200, 1000);
 let end = performance.now();
 console.log(`Generated ${samples.length} samples in ${(end - start).toFixed(2)} ms`);
 
@@ -80,7 +139,7 @@ console.log(`Built adjacency matrix in ${(end - start).toFixed(2)} ms`);
 
 // CLUSTERING
 start = performance.now();
-const { graph, components } = clusterByThreshold(samples, adjacencyMatrix, 0.1);
+const { graph, components } = clusterByThreshold(samples, adjacencyMatrix, 0.3);
 console.log("Clusters:", components);
 end = performance.now();
 console.log(`Clustered samples in ${(end - start).toFixed(2)} ms`);
@@ -89,22 +148,9 @@ console.log(`Clustered samples in ${(end - start).toFixed(2)} ms`);
 // 200 samples of 10000 bases (threshold 0.25): a few milliseconds
 // 200 samples of 10000 bases (threshold 0.1): a few milliseconds
 // 200 samples of 100000 bases (threshold 0.1): a few milliseconds
+let clusters = componentsToClusters(samples, components);
 
-// TREE BUILDING (using connected components as clusters)
-
-//const { Graph } = require("graphology");
-//const graph = new Graph();
-
-/*
-samples.forEach(s => graph.addNode(s.id));
-
-samples.forEach((s1, i) => {
-  samples.forEach((s2, j) => {
-    if (i < j) {
-      graph.addEdge(s1.id, s2.id, { weight: adjacencyMatrix[i][j] });
-    }
-  });
-});
-*/
+let tree = buildClusterTree(clusters, samples, adjacencyMatrix);
+console.log("Cluster tree:", tree);
 
 
