@@ -1,5 +1,6 @@
 import Graph from 'graphology';
 import { connectedComponents } from 'graphology-components';
+import * as d3 from 'd3';
 
 function randomDNA(length = 500) {
   const bases = ["A", "C", "G", "T"];
@@ -195,6 +196,24 @@ export function collapseToClusterGraph(mst, clusterMap) {
 
   return collapsed;
 }
+
+function graphologyToD3(graph) {
+  const nodes = graph.nodes().map(id => ({
+    id,
+    ...graph.getNodeAttributes(id)
+  }));
+
+  const links = graph.edges().map(edge => {
+    const [source, target] = graph.extremities(edge);
+    return {
+      source,
+      target,
+      ...graph.getEdgeAttributes(edge)
+    };
+  });
+
+  return { nodes, links };
+}
 //-----------------------------------------------------------------------------------------------//
 
 // SAMPLE GENERATION
@@ -240,15 +259,88 @@ end = performance.now();
 console.log(`Collapsed to cluster graph in ${(end - start).toFixed(2)} ms`);
 // 200 samples of 10000 bases (threshold 0.25): a few milliseconds
 
-// CLUSTERING
-// start = performance.now();
-// const { graph, components } = clusterByThreshold(samples, adjacencyMatrix, 0.3);
-// console.log("Clusters:", components);
-// end = performance.now();
-// console.log(`Clustered samples in ${(end - start).toFixed(2)} ms`);
-// // 100 samples of 1000 bases (threshold 0.75): a few milliseconds
-// // 200 samples of 1000 bases (threshold 0.75): a few milliseconds
-// // 200 samples of 10000 bases (threshold 0.25): a few milliseconds
-// // 200 samples of 10000 bases (threshold 0.1): a few milliseconds
-// // 200 samples of 100000 bases (threshold 0.1): a few milliseconds
-// let clusters = componentsToClusters(samples, components);
+let data = graphologyToD3(clusterGraph);
+
+console.log("GRAPH NODES:", clusterGraph.nodes());
+console.log("D3 NODES:", data.nodes.map(n => n.id));
+
+console.log("FIRST 5 GRAPH EDGES:", clusterGraph.edges().slice(0,5).map(e => clusterGraph.extremities(e)));
+console.log("FIRST 5 D3 LINKS:", data.links.slice(0,5));
+
+//-----------------------------------------------------------------------------------------------//
+
+
+function renderForceGraph(data) {
+  const width = 900;
+  const height = 700;
+
+  const svg = d3
+    .select("#graph")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  const zoomLayer = svg.append("g");
+  svg.call(d3.zoom().on("zoom", (event) => zoomLayer.attr("transform", event.transform)));
+
+  const simulation = d3
+    .forceSimulation(data.nodes)
+    .force("link", d3.forceLink(data.links).id(d => d.id))
+    .force("charge", d3.forceManyBody().strength(-120))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+  const link = zoomLayer
+    .selectAll("line")
+    .data(data.links)
+    .enter()
+    .append("line")
+    .attr("stroke", "#999");
+
+  const node = zoomLayer
+    .selectAll("circle")
+    .data(data.nodes)
+    .enter()
+    .append("circle")
+    .attr("r", 6)
+    .attr("fill", "steelblue")
+    .call(
+      d3.drag()
+        .on("start", dragStart)
+        .on("drag", dragged)
+        .on("end", dragEnd)
+    );
+
+  simulation.on("tick", () => {
+    link
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x)
+      .attr("y2", d => d.target.y);
+
+    node
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y);
+  });
+
+  function dragStart(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+
+  function dragEnd(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+}
+const container = document.createElement("div");
+container.id = "graph";
+document.body.appendChild(container);
+
+renderForceGraph(data);

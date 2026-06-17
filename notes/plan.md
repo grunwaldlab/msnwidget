@@ -33,18 +33,24 @@ Manual click-and-drag, plus preset layout options as in poppr MSN widget:
 
 Slider to change edge length, which would require the distance legend be simultaneously updated.
 
-#### Changing Clustering Threshold/Algorithm/Distance Calculation
+#### Changing Clustering Threshold/Distance Calculation
 SNP Distance Metrics Options:
 - Simple bitwise distance
 - Dissimilarity proportion
 
+Slider to change clustering threshold:
+- Edges between nodes weighted by similarity higher than the threshold will combine the affected nodes into one meta-node. 
+- The edges between the meta-node and other nodes will be determined by the minimum edges in the cluster that allow the same connections.
+- Original MSN is preserved because the cluster-collapsed version is a copy, so any further clustering will be just as non-intensive.
+
 #### Removing Nodes
-Delete or hide nodes with graphology remove function, add them back within one deletion
+Delete or hide nodes with graphology remove function, add them back within one deletion via copy. Removing nodes will require reconstruction of the spanning network, but it still does not require reconstruction of the distance matrix, so it's still computationally efficient at the few hundred node level.
 
 #### Faceting the Graph
 Users select which populations (and potentially genotype nodes) to include
 - Subset each population into a separate section to view simultaneously
 - View one population at a time (different color legend?)
+- View one genotype cluster at a time
 
 ### Legends
 - Color legend for populations
