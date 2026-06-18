@@ -23,10 +23,7 @@ Sample information will be available via popup once a node is click-selected, in
 
 ### Graph Modification
 #### Network Selection and Rearrangement
-Manual click-and-drag rearrangement, plus preset force layout options from D3:
-- Nice layout
-- Randomized layout
-
+Manual click-and-drag rearrangement, plus preset force layout options from D3
 Slider to change edge length, which would require the distance legend be simultaneously updated.
 
 #### Changing Clustering Threshold/Distance Calculation
