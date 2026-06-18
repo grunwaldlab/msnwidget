@@ -36,15 +36,20 @@ Slider to change clustering threshold:
 - The edges between the meta-node and other nodes will be determined by the minimum edges in the cluster that allow the same connections.
 - Original MSN is preserved because the cluster-collapsed version is a copy, so any further clustering will be just as non-intensive.
 
-Users can alternate between a 'collapsed' view of the network with pie chart icons over clustered meta-nodes, or a 'full' view of all nodes with boundaries drawn around each cluster. Either a dropdown or buttons.
+Users can alternate between a 'collapsed' view of the network with pie chart icons over clustered meta-nodes, or a 'full' view of all nodes with boundaries drawn around each cluster. Either a dropdown or buttons. This could be done recursively such that clusters are each an MSN in a circle.
 
 #### Removing Nodes
-Delete or hide nodes with graphology remove function, add them back within one deletion via copy. Removing nodes will require reconstruction of the spanning network, but it still does not require reconstruction of the distance matrix, so it's still computationally efficient at the few hundred node level.
+Delete or hide nodes with graphology remove function, add them back within one deletion via copy. Removing nodes will require reconstruction of the spanning network, but it still does not require reconstruction of the distance matrix, so it's still computationally efficient at the few hundred node level. NOTE: change to only setting a hidden flag rather than altering graphology data strucutre
 
 Interface:
-- Node option buttons are available in a sidebar once a node is selected. Users can choose to remove or hide nodes. 
+- Node option buttons are available in a sidebar once a node is selected. Users can choose to remove or hide nodes. NOTE: probably should be floating control next to selected nodes/edges
 
-#### Faceting the Graph
+QUESTIONs: 
+- how do users undelete things?
+- how to select multiple
+
+
+#### Faceting the Graph NOTE: will be handled flexquilt
 Users select which populations and nodes to include
 - Subset each population into a separate section to view simultaneously with subset switch
 - View one or several populations at a time via checkboxes
@@ -54,9 +59,9 @@ Users select which populations and nodes to include
 ### Legends
 - Color legend for populations
 - Size legend for node size (number of individuals with the genotype)
-- Distance legend for edge length
+- Distance legend for edge thickness
 - Pie chart icons depending on collapse
 - Drawn circular boundaries if a clustered MSN is viewed in full 
 
-### Plot Saving
+### Plot Saving NOTE: will be handled by flexquilt
 Static plot output as .pdf
