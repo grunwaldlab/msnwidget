@@ -2,38 +2,97 @@ import Graph from 'graphology';
 import { connectedComponents } from 'graphology-components';
 import * as d3 from 'd3';
 
-function randomDNA(length = 500) {
-  const bases = ["A", "C", "G", "T"];
-  return Array.from({ length }, () => bases[Math.floor(Math.random() * 4)]).join("");
-}
+const BASE_MAP = {
+  65: 0b00, // A
+  67: 0b01, // C
+  71: 0b10, // G
+  84: 0b11  // T
+};
 
-function generateFastaSamples(n = 100, length = 50) {
-  return Array.from({ length: n }, (_, i) => ({
-    id: `sample_${i + 1}`,
-    seq: randomDNA(length)
-  }));
-}
+function packDNA(seq) {
+  const len = seq.length;
+  const blocks = Math.ceil(len / 16);
+  const out = new Uint32Array(blocks);
 
-function sequenceSimilarity(seqA, seqB) {
-  const len = Math.min(seqA.length, seqB.length);
-  let matches = 0;
+  let block = 0;
+  let shift = 0;
+
   for (let i = 0; i < len; i++) {
-    if (seqA[i] === seqB[i]) matches++;
+    const code = BASE_MAP[seq[i]];
+    block |= code << shift;
+    shift += 2;
+
+    if (shift === 32) {
+      out[(i >> 4)] = block;
+      block = 0;
+      shift = 0;
+    }
   }
-  return matches / len; // normalized similarity 0–1
+
+  if (shift > 0) out[out.length - 1] = block;
+
+  return out;
 }
 
-function buildDistanceMatrix(samples) {
-    const n = samples.length;
-    const matrix = Array.from({ length: n }, () => Array(n).fill(0));
+
+function generatePackedSamples(n = 100, length = 500) {
+  const bases = ["A", "C", "G", "T"];
+
+  function randomDNA(length) {
+    const arr = new Uint8Array(length);
+    for (let i = 0; i < length; i++) {
+      arr[i] = bases[Math.floor(Math.random() * 4)].charCodeAt(0);
+    }
+    return arr;
+  }
+
+  return Array.from({ length: n }, (_, i) => {
+    const seq = randomDNA(length);
+    return {
+      id: `sample_${i + 1}`,
+      packed: packDNA(seq),
+      length
+    };
+  });
+}
+
+function popcount32(x) {
+  x = x - ((x >>> 1) & 0x55555555);
+  x = (x & 0x33333333) + ((x >>> 2) & 0x33333333);
+  return (((x + (x >>> 4)) & 0x0F0F0F0F) * 0x01010101) >>> 24;
+}
+
+function similarityPacked(a, b, length) {
+  let mismatches = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    const diff = a[i] ^ b[i];
+    const collapsed = (diff | (diff >>> 1)) & 0x55555555;
+
+    mismatches += popcount32(collapsed);
+  }
+
+  const matches = length - mismatches;
+  return matches / length;
+}
+
+
+function buildDistanceMatrixPacked(samples) {
+  const n = samples.length;
+  const matrix = new Float64Array(n * n);
 
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      const sim = sequenceSimilarity(samples[i].seq, samples[j].seq);
-      matrix[i][j] = sim;
-      matrix[j][i] = sim;
+      const sim = similarityPacked(
+        samples[i].packed,
+        samples[j].packed,
+        samples[i].length
+      );
+      matrix[i * n + j] = sim;
+      matrix[j * n + i] = sim;
     }
   }
+
   return matrix;
 }
 
@@ -46,7 +105,7 @@ function graphFromDistanceMatrix(samples, distanceMatrix) {
   // Add weighted edges (distance = weight)
   for (let i = 0; i < samples.length; i++) {
     for (let j = i + 1; j < samples.length; j++) {
-      const dist = distanceMatrix[i][j];
+      const dist = distanceMatrix[i * samples.length + j];
       graph.addEdge(samples[i].id, samples[j].id, { weight: dist });
     }
   }
@@ -217,11 +276,11 @@ function graphologyToD3(graph) {
 //-----------------------------------------------------------------------------------------------//
 
 // SAMPLE GENERATION
-const samples = generateFastaSamples(200, 10000);
+const samples = generatePackedSamples(300, 1000000);
 
 // DISTANCE MATRIX BUILDING
 let start = performance.now();
-let distanceMatrix = buildDistanceMatrix(samples);
+let distanceMatrix = buildDistanceMatrixPacked(samples);
 let end = performance.now();
 console.log(`Built distance matrix in ${(end - start).toFixed(2)} ms`);
 // 100 samples of 1000 bases: a few milliseconds
@@ -268,8 +327,6 @@ console.log("FIRST 5 GRAPH EDGES:", clusterGraph.edges().slice(0,5).map(e => clu
 console.log("FIRST 5 D3 LINKS:", data.links.slice(0,5));
 
 //-----------------------------------------------------------------------------------------------//
-
-
 function renderForceGraph(data) {
   const width = 900;
   const height = 700;

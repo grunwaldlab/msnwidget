@@ -3,38 +3,34 @@ graphology: .fasta alignment or .vcf or similar alignment/variant call input
 D3: .json-converted graphology tree
 
 ### Libraries
-- vis-network OR D3 (visualization)
-- graphology (backend tree management)
-- distance/adjacency matrix calculations/conversions are manual
+- D3 (visualization)
+- graphology (tree management)
+- vcf-js (.vcf parser for JS)
+- distance/adjacency matrix calculations/conversions, plus MSN construction are manual
 
-### Alignment to Clustered MSN
-Extract IDs and sequences from file format -> Create similarity matrix -> Cluster genotypes w/ graphology connected components -> Cluster new genotype array according to threshold w/ graphology connected components -> Create nodes with graphology network structure -> Export to .json -> Feed to D3
+### Alignment to Visualized MSN Pipeline
+Extract IDs and sequences from file format -> Create distance matrix -> Build a fully connected network from distance matrix -> Perform Kruskal's algorithm on the full set of edges and remove those not associated with an MSN -> Detect "highly connected components" (clusters) from the MSN from a custom threshold and return a cluster map -> Collapse MSN to clustered components if desired -> Export to .json compatible with D3 -> Visualize network with D3 elements
 
 ### Initial Network Construction
-Clustering threshold assessed manually, converted to a "connected component" via graphology.
-Filtered network constructed with Kruskal's algorithm via graphology.
-
-### Sample Information
-Sample information will be available via popup, including the individual IDs associated with each genotype
+Network is constructed using a graphology network object modified with Kruskal's algorithm performed manually.
+Clustering threshold assessed manually, converted to a "connected component" cluster map via graphology, and collapsed to a clustered network by modifying the graphology object if desired.
 
 ### Time Complexity
-Adjacency matrix calculation and node building are both O(n^2). N will be a lower value after clustering is complete.
+Matrix building is the largest computational bottleneck, which can be solved via bit packing - achieves ~10 seconds with one million difference sites and 300 samples. If higher performance is desired, WASM parallel processing will be necessary.
 
-Clustering appears much less computationally intensive than adjacency matrix calculation (staying in the milliseconds range as matrix calculation extends to seconds with the same amount of samples).
-
-Webworkers will likely be needed as a backend for adjacency matrix building, but it likely won't be necessary for anything beyond that. Allowing the user to import their own adjacency matrix will significantly reduce computation time, in that case.
-
+### Sample Information
+Sample information will be available via popup once a node is click-selected, including the individual IDs associated with each genotype.
 
 ### Graph Modification
-#### Network Rearrangement
-Manual click-and-drag, plus preset layout options as in poppr MSN widget:
+#### Network Selection and Rearrangement
+Manual click-and-drag rearrangement, plus preset force layout options from D3:
 - Nice layout
 - Randomized layout
 
 Slider to change edge length, which would require the distance legend be simultaneously updated.
 
 #### Changing Clustering Threshold/Distance Calculation
-SNP Distance Metrics Options:
+SNP Distance Metrics Options (dropdown):
 - Simple bitwise distance
 - Dissimilarity proportion
 
@@ -43,20 +39,27 @@ Slider to change clustering threshold:
 - The edges between the meta-node and other nodes will be determined by the minimum edges in the cluster that allow the same connections.
 - Original MSN is preserved because the cluster-collapsed version is a copy, so any further clustering will be just as non-intensive.
 
+Users can alternate between a 'collapsed' view of the network with pie chart icons over clustered meta-nodes, or a 'full' view of all nodes with boundaries drawn around each cluster. Either a dropdown or buttons.
+
 #### Removing Nodes
 Delete or hide nodes with graphology remove function, add them back within one deletion via copy. Removing nodes will require reconstruction of the spanning network, but it still does not require reconstruction of the distance matrix, so it's still computationally efficient at the few hundred node level.
 
+Interface:
+- Node option buttons are available in a sidebar once a node is selected. Users can choose to remove or hide nodes. 
+
 #### Faceting the Graph
-Users select which populations (and potentially genotype nodes) to include
-- Subset each population into a separate section to view simultaneously
-- View one population at a time (different color legend?)
-- View one genotype cluster at a time
+Users select which populations and nodes to include
+- Subset each population into a separate section to view simultaneously with subset switch
+- View one or several populations at a time via checkboxes
+- View one cluster at a time via circle boundary selection 
+- Lasso select several nodes at once to view in isolation
 
 ### Legends
 - Color legend for populations
 - Size legend for node size (number of individuals with the genotype)
 - Distance legend for edge length
-- Pie chart icons upon zooming out
+- Pie chart icons depending on collapse
+- Drawn circular boundaries if a clustered MSN is viewed in full 
 
 ### Plot Saving
-Plot output as .pdf
+Static plot output as .pdf
