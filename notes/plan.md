@@ -71,5 +71,5 @@ Users can alternate between a 'collapsed' view and a 'full' view of the network,
 - Size legend for node size (number of samples with the genotype)
 - Distance legend with a line thickness/darkness scale 
 
-### Plot Saving
+### Plot Saving NOTE: will be handled by flexquilt
 Static plot output as .pdf
