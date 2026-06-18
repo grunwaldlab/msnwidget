@@ -1,6 +1,10 @@
+# Genomic Variant-Based Minimum Spanning Network Widget
+### Concept
+This interactive widget will visualize a minimum spanning network between nodes that represent various multilocus genotypes of members of various populations from an alignment or variant call format.  
+
 ### Inputs
-graphology: .fasta alignment or .vcf or similar alignment/variant call input
-D3: .json-converted graphology tree
+- Input to graphology: .fasta alignment/similar alignment OR .vcf/similar variant call input OR pre-existing distance matrix from user
+- Input to D3: .json-converted graphology graph
 
 ### Libraries
 - D3 (visualization)
@@ -8,55 +12,64 @@ D3: .json-converted graphology tree
 - vcf-js (.vcf parser for JS)
 - distance/adjacency matrix calculations/conversions, plus MSN construction are manual
 
-### Alignment to Visualized MSN Pipeline
-Extract IDs and sequences from file format -> Create distance matrix -> Build a fully connected network from distance matrix -> Perform Kruskal's algorithm on the full set of edges and remove those not associated with an MSN -> Detect "highly connected components" (clusters) from the MSN from a custom threshold and return a cluster map -> Collapse MSN to clustered components if desired -> Export to .json compatible with D3 -> Visualize network with D3 elements
+### Metadata
+Every genotype node will have (at least) the associated:
+- Sample IDs of members
+- Population name
+- Genotype
+- Cluster number (if applicable)
 
-### Initial Network Construction
+### Alignment to Visualized MSN Pipeline
+Extract IDs and sequences from file format -> Create distance matrix -> Build a fully connected network from distance matrix -> Perform Kruskal's algorithm on the full set of edges and remove those not associated with an MSN -> Detect "highly connected components" (clusters) from the MSN from a custom threshold and return a cluster map -> Collapse MSN to clustered components if desired -> Export to .json compatible with D3 -> Visualize network with D3 force layout
+
+### Network Construction Backend
 Network is constructed using a graphology network object modified with Kruskal's algorithm performed manually.
-Clustering threshold assessed manually, converted to a "connected component" cluster map via graphology, and collapsed to a clustered network by modifying the graphology object if desired.
+Clustering threshold is assessed manually, converted to a "connected component" cluster map via graphology, and collapsed to a clustered network by modifying the graphology object if desired.
 
 ### Time Complexity
-Matrix building is the largest computational bottleneck, which can be solved via bit packing - achieves ~10 seconds with one million difference sites and 300 samples. If higher performance is desired, WASM parallel processing will be necessary.
+Matrix construction is the largest computational bottleneck, which can be solved via bit packing - achieves ~10 seconds with one million difference sites and 300 samples. If higher performance is desired, WASM parallel processing will be necessary.
 
-### Sample Information
-Sample information will be available via popup once a node is click-selected, including the individual IDs associated with each genotype.
+### Node/Cluster-Level Interactivity
+#### Node Popups
+- Double click a node to view popup, small exit symbol to close it
+- Contains sample IDs, variation number, population name, cluster number, option button to hide
 
-### Graph Modification
-#### Network Selection and Rearrangement
-Manual click-and-drag rearrangement, plus preset force layout options from D3
-Slider to change edge length, which would require the distance legend be simultaneously updated.
+#### Node Select
+- Select one single or multiple nodes by single-clicking the node to select, and again to de-select
+- Lasso select multiple nodes through mouse click-and-drag
+- Selected nodes can be moved via click-and-drag
 
-#### Changing Clustering Threshold/Distance Calculation
-SNP Distance Metrics Options (dropdown):
-- Simple bitwise distance
-- Dissimilarity proportion
+#### Cluster Select
+- In 'full view', the user can select entire clusters by clicking the boundaries drawn around them
 
-Slider to change clustering threshold:
-- Edges between nodes weighted by similarity higher than the threshold will combine the affected nodes into one meta-node. 
-- The edges between the meta-node and other nodes will be determined by the minimum edges in the cluster that allow the same connections.
-- Original MSN is preserved because the cluster-collapsed version is a copy, so any further clustering will be just as non-intensive.
+#### Hide Nodes
+- Option in node popup, node and associated edges will not be rendered in D3, but will remain in the graphology structure
+- Hidden nodes will appear in a small floating panel with an option to unhide them  
 
-Users can alternate between a 'collapsed' view of the network with pie chart icons over clustered meta-nodes, or a 'full' view of all nodes with boundaries drawn around each cluster. Either a dropdown or buttons.
+### Full Plot Interactivity
+#### Distance Calculation Metric
+Dropdown containing:
+- Simple bitwise similarity metric
+- Proportion of dissimilarity metric
 
-#### Removing Nodes
-Delete or hide nodes with graphology remove function, add them back within one deletion via copy. Removing nodes will require reconstruction of the spanning network, but it still does not require reconstruction of the distance matrix, so it's still computationally efficient at the few hundred node level.
+#### Clustering Threshold
+Slider representing various similarity thresholds for clustering, which in default full view will only draw circular boundaries around the clusters
 
-Interface:
-- Node option buttons are available in a sidebar once a node is selected. Users can choose to remove or hide nodes. 
+#### Network Views
+Full view:
+- All nodes are rendered, but circular boundaries are drawn around the clusters
 
-#### Faceting the Graph
-Users select which populations and nodes to include
-- Subset each population into a separate section to view simultaneously with subset switch
-- View one or several populations at a time via checkboxes
-- View one cluster at a time via circle boundary selection 
-- Lasso select several nodes at once to view in isolation
+Collapsed View:
+- Only cluster meta-nodes are rendered
+- Node icons are replaced with pie charts representing the proportion of each population within the cluster
+- Popups function the same with meta-nodes, but now contain the population proportions from the pie chart annotation and the option to hide the meta-node
+
+Users can alternate between a 'collapsed' view and a 'full' view of the network, which can be changed with a switch (in a floating panel with the clustering slider, distance metric dropdown, and list of hidden nodes)
 
 ### Legends
 - Color legend for populations
-- Size legend for node size (number of individuals with the genotype)
-- Distance legend for edge length
-- Pie chart icons depending on collapse
-- Drawn circular boundaries if a clustered MSN is viewed in full 
+- Size legend for node size (number of samples with the genotype)
+- Distance legend with a line thickness/darkness scale 
 
 ### Plot Saving
 Static plot output as .pdf
