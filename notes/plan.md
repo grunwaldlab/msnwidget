@@ -33,11 +33,13 @@ The following can be done by interacting with individual nodes, edges, and clust
 #### Node Popups
 - Double click a node to view popup, small exit symbol to close it
 - If another node or cluster (boundary or meta-node) is selected, the popup closes (one open at a time)
+- Popups disappear when nodes are dragged
 - Contains sample IDs and other associated metadata
 
 #### Cluster popups
 - Double-click a meta node in 'collapsed' view or double-click a circular boundary in 'full' view to view a cluster summary popup, small exit symbol to close it 
 - If another node, meta-node or circular boundary is selected, the popup closes (one open at a time)
+- Popups disappear when nodes are dragged
 - Contains sample IDs, selected pie chart variable proportions, and mean/variance (numerical or proportional for continuous/categorical variables respectively)  
 
 #### Node Select
@@ -55,6 +57,8 @@ The following can be done by interacting with individual nodes, edges, and clust
 - If multiple nodes or clusters are selected, the 'hide' button only appears alongside the most recent node or cluster selected 
 - The 'hide' button will hide all selected nodes/clusters
 - Node and associated edges will not be rendered in D3, but will remain in the graphology structure
+- If a node or cluster is double-clicked, the button disappears
+- Button disappears on drag (moving) and reappears once stopped
 
 ### Global Interactions
 The following can be done by interacting with controls in a floating panel positioned over the plot:
@@ -85,6 +89,7 @@ Users can upload a pre-existing distance matrix to build the graph directly.
 Dropdown containing:
 - Simple bitwise similarity metric
 - Proportion of dissimilarity metric
+- Potential other population genomics-informed distance
 
 #### Plot Saving
 Static plot output as .pdf
