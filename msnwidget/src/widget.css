@@ -1,0 +1,299 @@
+.msnw {
+  --ink: #333;
+  --muted: #666;
+  --border: #ddd;
+  --accent: #007bff;
+  color-scheme: light;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid var(--border) !important;
+  border-radius: 5px !important;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  font: 12px/1.4 sans-serif;
+  box-sizing: border-box;
+}
+
+.msnw *, .msnw *::before, .msnw *::after { 
+  box-sizing: border-box; 
+}
+
+.msnw [hidden] { 
+  display: none !important; 
+}
+
+.msnw button, .msnw select, .msnw input { 
+  font: inherit; 
+  color: inherit; 
+}
+
+.msnw-panel button[data-action="export"] {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.msnw-panel button[data-action="export"]:hover {
+  background-color: #0056b3;
+  color: #fff;
+}
+
+.msnw button, .msnw select {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+.msnw button { 
+  cursor: pointer; white-space: nowrap; 
+}
+
+.msnw button:hover { 
+  color: #666; 
+}
+
+.msnw button:disabled { 
+  color: #999; cursor: default; opacity: .55; 
+}
+
+.msnw button:focus-visible, .msnw select:focus-visible, .msnw input:focus-visible { 
+  outline: 2px solid var(--accent); outline-offset: 2px; 
+}
+
+.msnw-tabs { 
+  display: flex; gap: 20px; padding: 4px 8px; background: #f5f5f5; border-bottom: 2px solid #ddd; user-select: none; 
+}
+
+.msnw-tabs button { 
+  border: 0; border-radius: 0; padding: 2px 4px 4px; color: var(--ink); background: transparent; 
+}
+
+.msnw-tabs button[aria-expanded=true] { 
+  border-bottom: 2px solid var(--accent); font-weight: 700; 
+}
+
+.msnw-toolbar { 
+  position: relative; z-index: 1000; display: flex; flex: 0 0 auto; flex-direction: column; margin-bottom: 4px; 
+}
+
+.msnw-toggle-container { 
+  position: absolute; z-index: 10; top: 0; right: 0; padding: 4px 8px; 
+}
+
+.msnw-menu-toggle { 
+  display: flex; align-items: center; gap: 4px; padding: 0 !important; border: 0 !important; background: transparent !important; cursor: pointer; transition: opacity 0.2s; 
+}
+
+.msnw-menu-toggle:hover { 
+  opacity: 0.7; 
+}
+
+.msnw-toggle-arrow { 
+  transition: transform 0.3s; 
+}
+
+.msnw-menu-toggle.collapsed .msnw-toggle-arrow { 
+  transform: rotate(180deg); 
+}
+
+.msnw-hamburger-icon { 
+  color: #333; 
+}
+
+.msnw-collapsible-panel { 
+  max-height: 1000px; overflow: hidden; transition: max-height 0.3s ease-in-out; 
+}
+
+.msnw-collapsible-panel.msnw-panel-collapsed { 
+  max-height: 0; 
+}
+
+.msnw-settings { 
+  background: #fafafa; border-bottom: 1px solid #ddd; 
+}
+
+.msnw-panel { 
+  display: flex; align-items: center; flex-wrap: wrap; column-gap: 10px; row-gap: 6px; padding: 5px 8px; 
+}
+
+.msnw-panel label { 
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; 
+}
+
+.msnw-panel select { 
+  max-width: 190px; 
+}
+
+.msnw-file-button { 
+  display: inline-flex; width: 20px; height: 20px; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 4px; background: #e0e0e0; font-size: 12px; line-height: 1; cursor: pointer; 
+}
+
+.msnw-file-button:hover { 
+  background: #d0d0d0; 
+}
+
+.msnw-file-button:focus-within { 
+  outline: 2px solid var(--accent); outline-offset: 2px; 
+}
+
+.msnw-file-button input { 
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); 
+}
+
+.msnw-sr-only { 
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; 
+}
+
+.msnw-panel .msnw-check { 
+  gap: 3px; 
+}
+
+.msnw-panel input[type=number] { 
+  width: 76px; 
+}
+
+.msnw-panel input[type=range] { 
+  width: 120px; accent-color: var(--accent); 
+}
+
+.msnw-notice { 
+  width: fit-content; max-width: calc(100% - 16px); margin: 0 8px 4px; padding: 3px 6px; color: var(--ink); background: #fffffff2; border: 1px solid #ddd; border-radius: 4px; 
+}
+
+.msnw-notice:empty { 
+  display: none; 
+}
+
+.msnw-plot { 
+  position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; overflow: hidden; background: #fff; 
+}
+
+.msnw-canvas { 
+  display: block; width: 100%; height: 100%; touch-action: none; 
+}
+
+.msnw-canvas g[role=button], .msnw-canvas circle[role=button] { 
+  cursor: pointer; 
+}
+
+.msnw-canvas [role=button]:focus { 
+  outline: none; filter: drop-shadow(0 0 3px var(--accent)); 
+}
+
+.msnw-floating, .msnw-legends {
+  position: absolute;
+  z-index: 2;
+  background: #fffffff2;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 1px 4px #0002;
+  padding: 7px;
+}
+
+.msnw-floating { 
+  top: 10px; left: 10px; width: 205px; 
+}
+
+.msnw-floating label { 
+  display: block; font-weight: 600; 
+}
+
+.msnw-floating output { 
+  float: right; font-family: monospace; color: var(--accent); 
+}
+
+.msnw-floating input[type=range] { 
+  width: 100%; margin: 5px 0; accent-color: var(--accent); 
+}
+
+.msnw-view { 
+  display: flex; margin: 3px 0 6px; 
+}
+
+.msnw-view button { 
+  flex: 1; border-radius: 0; 
+}
+
+.msnw-view button:first-child { 
+  border-radius: 4px 0 0 4px; 
+}
+
+.msnw-view button:last-child { 
+  border-radius: 0 4px 4px 0; 
+}
+
+.msnw-view button[aria-pressed=true] { 
+  color: #fff; border-color: var(--accent); background: var(--accent); 
+}
+
+.msnw-empty { 
+  position: absolute; top: 52%; left: 10%; width: 80%; text-align: center; color: var(--muted); pointer-events: none; 
+}
+
+.msnw-legends { 
+  right: 10px; bottom: 10px; display: flex; flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 7px 10px; overflow: auto; color: var(--muted); font-size: 10px; 
+}
+
+.msnw-legends span { 
+  display: inline-flex; align-items: center; gap: 4px; 
+}
+
+.msnw-legends i { 
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%; 
+}
+
+.msnw-legends svg { 
+  flex: 0 0 auto; overflow: visible; 
+}
+
+.msnw-hide { 
+  position: absolute; z-index: 3; background: #333 !important; color: #fff !important; box-shadow: 0 1px 4px #0003; 
+}
+
+.msnw-popup { 
+  position: absolute; z-index: 4; top: 10px; right: 10px; width: 340px; max-width: calc(100% - 20px); max-height: 85%; overflow: auto; padding: 16px; border: 1px solid #ddd; border-radius: 5px; background: #fff; box-shadow: 0 3px 12px #0002; 
+}
+
+.msnw-popup > button { 
+  position: absolute; top: 5px; right: 7px; border: 0; padding: 0 5px; font-size: 20px; 
+}
+
+.msnw-popup h3 { 
+  margin: 0 22px 4px 0; font-size: 17px; 
+}
+
+.msnw-popup h4 { 
+  font-size: 11px; margin: 12px 0 4px; 
+}
+
+.msnw-popup p { 
+  font-size: 11px; overflow-wrap: anywhere; 
+}
+
+.msnw-ids { 
+  color: var(--accent); 
+}
+
+.msnw-popup table { 
+  width: 100%; font-size: 11px; border-collapse: collapse; 
+}
+
+.msnw-popup td { 
+  padding: 6px 4px; border-bottom: 1px solid #ddd; vertical-align: top; overflow-wrap: anywhere; 
+}
+
+@media (max-width: 650px) {
+  .msnw-tabs { gap: 12px; padding: 4px 6px; }
+  .msnw-panel { gap: 6px; }
+  .msnw-panel label { flex-wrap: wrap; }
+  .msnw-floating { left: 6px; top: 6px; width: 190px; }
+  .msnw-popup { top: 6px; right: 6px; max-width: calc(100% - 12px); }
+  .msnw-legends { right: 6px; bottom: 6px;}
+}

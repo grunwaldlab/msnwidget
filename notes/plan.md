@@ -3,7 +3,7 @@
 This interactive widget will visualize a minimum spanning network between nodes that represent various multilocus genotypes of members of various populations from an alignment or variant call format.  
 
 ### Inputs
-- Input to graphology: .fasta alignment/similar alignment OR .vcf/similar variant call input OR pre-existing distance matrix from user
+- Input to the MSN calculation: .fasta alignment/similar alignment OR .vcf/similar variant call input OR pre-existing similarity/dissimilarity matrix from user (type inferred from the diagonal)
 - Input to D3: .json-converted graphology graph
 
 ### Libraries
@@ -15,17 +15,18 @@ This interactive widget will visualize a minimum spanning network between nodes 
 ### Metadata
 Every genotype node will have the associated:
 - Sample IDs of members
-- Other user-uploaded metadata
+- Other user-uploaded metadata, with dates summarized as ranges rather than numeric mean/variance
 
 ### Alignment to Visualized MSN Pipeline
-Extract IDs and sequences from file format -> Create distance matrix -> Build a fully connected network from distance matrix -> Perform Kruskal's algorithm on the full set of edges and remove those not associated with an MSN -> Detect "highly connected components" (clusters) from the MSN from a custom threshold and return a cluster map -> Collapse MSN to clustered components if desired -> Export to .json compatible with D3 -> Visualize network with D3 force layout
+Extract IDs and sequences -> Subset samples to the selected metadata group, if any -> Create the group's distance matrix -> Build the MSN directly from the dense matrix with Prim's algorithm -> Optionally retain tied edges that can occur in alternative minimum spanning trees -> Build a complete-linkage hierarchy -> Cut the hierarchy at the selected similarity threshold -> Collapse to clustered components if desired -> Visualize with the D3 force layout
 
 ### Network Construction Backend
-Network is constructed using a graphology network object modified with Kruskal's algorithm performed manually.
-Clustering threshold is assessed manually, converted to a "connected component" cluster map via graphology, and collapsed to a clustered network by modifying the graphology object if desired.
+The default MSN is constructed directly from the dense dissimilarity matrix with Prim's algorithm; the complete graph is not materialized in Graphology on this path. Equal-weight choices are deterministic by endpoint IDs. An API option retains edges eligible in alternative minimum spanning trees using equal-weight groups.
+Complete-linkage (farthest-neighbor) clustering uses pairwise genotype distances. At similarity threshold `s`, clusters merge only when their maximum cross-cluster dissimilarity is `<= 1 - s`. The hierarchy is computed on dataset/group load and cut at each threshold; changing the threshold updates cluster assignments and the collapsed display without rebuilding the MSN.
+Selecting a metadata group rebuilds genotype nodes, pairwise distances, MSN, and linkage from only that group's samples; it is not a visual-only filter of the all-sample network.
 
 ### Time Complexity
-Matrix construction is the largest computational bottleneck, which can be solved via bit packing - achieves ~10 seconds with one million difference sites and 300 samples. If higher performance is desired, WASM parallel processing will be necessary.
+Pairwise distance calculation and complete-linkage construction are expected bottlenecks. Prim avoids storing complete-graph edges, but the pairwise distance matrix remains quadratic. Benchmark before setting performance targets or deciding whether WASM/parallel processing is needed.
 
 ### Local Node/Cluster Interactions
 The following can be done by interacting with individual nodes, edges, and clusters:
@@ -40,7 +41,7 @@ The following can be done by interacting with individual nodes, edges, and clust
 - Double-click a meta node in 'collapsed' view or double-click a circular boundary in 'full' view to view a cluster summary popup, small exit symbol to close it 
 - If another node, meta-node or circular boundary is selected, the popup closes (one open at a time)
 - Popups disappear when nodes are dragged
-- Contains sample IDs, selected pie chart variable proportions, and mean/variance (numerical or proportional for continuous/categorical variables respectively)  
+- Contains sample IDs, selected pie chart variable proportions, mean/variance for numeric variables, date ranges, and observed proportions for categorical variables
 
 #### Node Select
 - Select one single or multiple nodes by single-clicking the node to select, and again to de-select
@@ -64,8 +65,8 @@ The following can be done by interacting with individual nodes, edges, and clust
 The following can be done by interacting with controls in a floating panel positioned over the plot:
 
 #### Clustering Threshold
-- Slider representing various similarity thresholds for clustering
-- Cluster views updated as clustering threshold changes
+- Slider from 90% to 100% similarity, defaulting to 95%
+- Complete-linkage cluster views update as the threshold changes
 
 #### Network Views
 Users can alternate between a 'collapsed' view and a 'full' view of the network, which can be changed with a switch
@@ -81,20 +82,22 @@ Collapsed View:
 - While no nodes are hidden, the 'unhide all' button is greyed out
 - If button is clicked, all previously hidden nodes and clusters are re-rendered
 
-### Interactions Handled Externally
-#### Distance Matrix Upload
-Users can upload a pre-existing distance matrix to build the graph directly.
-
 #### Distance Calculation Metric
-Dropdown containing:
-- Simple bitwise similarity metric
-- Proportion of dissimilarity metric
-- Potential other population genomics-informed distance
+- Bitwise or proportion metric is a function parameter for FASTA/VCF inputs only; it is not an active UI control.
+- Matrix type is inferred from the diagonal: zero for dissimilarity, one for similarity.
 
 #### Plot Saving
-Static plot output as .pdf
+Static plot output as .svg, .png, or .pdf
 
 ### Legends
-- Color legend for color-by variable (externally handled IF this variable aesthetic is shared with other plots)
-- Size legend for number of samples per node (externally handled IF this variable aesthetic is shared with other plots)
-- Distance legend with a line thickness/darkness scale (necessarily internal)
+- Color legend for color-by variable (Viridis scaling for categorical, numeric, and date values)
+- Size legend for number of samples per node
+- Distance legend with a line thickness/darkness scale
+
+### Reference
+Base the top menu bar construction off of this package (will eventually be a companion): https://www.npmjs.com/package/@grunwaldlab/heat-tree, with the following sections:
+- Data: dataset and metadata selection, plus-sign upload buttons
+- Controls: fit to view, manual/auto zoom/pan
+- Node Controls: text (default to ID, or use metadata variables), color variable, font, subset-by field and subset
+- Export: format selector, export button, and image sizing inputs
+- Match Heat Tree's compact controls and white-card UI; use a hamburger toggle for the settings bar, place legends over the plot, and use Viridis color scaling for categorical, numeric, and date values.

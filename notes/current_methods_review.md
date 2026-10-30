@@ -12,7 +12,7 @@ Distance matrices (multiple options):
 ### Pre-processing Runtime
 - clustering calculations and distance matrix building can be slow with high-level libraries
 - MSN construction in python, widget visualization in JS
-- Kruskal's algorithm generally runs much faster than Prim's
+- Kruskal and Prim performance depends on graph density and representation; weighted igraph MST calls default to Prim. The widget now uses dense-matrix Prim without materializing complete-graph edges; Kruskal remains in the optional equal-weight tie-inclusion path.
 
 ### Metadata
 Associated metadata table of:
@@ -31,13 +31,13 @@ Associated metadata table of:
     - built in MSN and distance calculation functionality
 
 #### Construction
-C++ libraries have faster runtimes, which is necessary for input files containing thosuands of nodes.
+C-backed graph libraries can improve runtime, but complete-graph memory and distance calculation are also major limits for large inputs.
 - igraph (R and Python)
-    - many available clustering algorithms for population detection
+    - graph algorithms and clustering; weighted MST defaults to Prim
 - networkx (Python)
-    - written in C++, useful for larger datasets
+    - Python graph library with optional accelerated backends
 - ggraph (R)
-    - facet graph capability (for viewing populations individually)
+    - ggplot2-based graph visualization and faceting, not graph construction
 
 #### Visualization
 - D3 (JS)
